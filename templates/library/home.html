@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block heading %}
+  Books List
+{% endblock heading %}
+
+{% block content %}
+  <!-- Searchbar -->
+  <form class="flex flex-col sm:flex-row items-center" action="/search/">
+    <div class="flex items-center space-x-4 mb-4 sm:mb-0">
+      <label for="search-query" class="text-lg">Search:</label>
+      <input
+        type="text"
+        id="search-query"
+        name="search-query"
+        placeholder="Search for books..."
+        class="w-full sm:w-64 px-4 py-2 bg-white border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+      />
+    </div>
+    <div class="flex space-x-4">
+      <button
+        type="submit"
+        name="search-type"
+        value="author"
+        class="btn-blue"
+      >
+        Search by Author
+      </button>
+      <button
+        type="submit"
+        name="search-type"
+        value="book"
+        class="btn-yellow"
+      >
+        Search by Book
+      </button>
+    </div>
+  </form>
+
+  <!-- Sorting Alphabetically -->
+  <form class="flex flex-col sm:flex-row items-center mt-4" action="/sort/">
+    <label for="sort_type" class="text-lg">Sort:</label>
+    <select
+      id="sort_type"
+      name="sort_type"
+      class="w-full sm:w-40 px-4 py-2 bg-white border border-gray-300 rounded focus:outline-none focus:border-red-500"
+    >
+      <option value="book">By Book</option>
+      <option value="author">By Author</option>
+    </select>
+    <ul id="sortable" class="flex flex-wrap space-x-2 mt-4 sm:mt-0">
+      {% for letter in alphabet %}
+      <li>
+        <button
+          type="submit"
+          name="sort"
+          value="{{ letter }}"
+          class="btn-letter"
+        >
+          {{ letter }}
+        </button>
+      </li>
+      {% endfor %}
+    </ul>
+  </form>
+
+  <!-- All Books -->
+  <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-8">
+    {% for book in books %}
+    <li class="bg-white rounded-lg shadow-md p-4 text-center">
+      <h2 class="text-lg font-bold">{{ book.name }}</h2>
+      <h4 class="text-sm text-blue-500">{{ book.author }}</h4>
+      <h4 class="text-sm text-yellow-300">{{ book.category }}</h4>
+      <div class="flex justify-center mt-4">
+        <img
+          src="{{ book.image.url }}"
+          alt="{{ book.name }}"
+          class="w-24 h-24 rounded-full"
+        />
+      </div>
+      {% if not user.is_superuser and not user.is_anonymous %}
+      {% if book in issuedbooks %}
+      <p class="text-green-500 font-medium">Issued</p>
+      {% elif book in requestedbooks %}
+      <p class="text-pink-500 font-medium">Requested</p>
+      {% else %}
+      <a
+        href="/request-book-issue/{{ book.id }}/"
+        class="btn-pink"
+      >
+        Request Issue
+      </a>
+      {% endif %}
+      {% endif %}
+      {% if user.is_superuser %}
+      <a
+        href="/admin/library/book/{{ book.id }}/change/"
+        class="btn-blue mt-2"
+      >
+        Edit
+      </a>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+
+  <!-- Author Search Results -->
+  {% if 'author' in request.get_full_path %}
+  {% for author in author_results %}
+  <div class="{% if not forloop.first %} mt-8 {% endif %}">
+    <h1 class="text-lg font-bold">{{ author.name }}</h1>
+    <ul class="list-disc ml-6">
+      {% for book in author.book_set.all %}
+      <li class="flex items-center space-x-2">
+        <h2>{{ book.name }}</h2>
+        {% if not user.is_superuser and not user.is_anonymous %}
+        {% if book in issuedbooks %}
+        <p class="text-green-500 font-medium">Issued</p>
+        {% elif book in requestedbooks %}
+        <p class="text-pink-500 font-medium">Requested</p>
+        {% else %}
+        <a
+          href="/request-book-issue/{{ book.id }}/"
+          class="text-blue-500 underline"
+        >
+          Request Issue
+        </a>
+        {% endif %}
+        {% endif %}
+      </li>
+      {% empty %}
+      <li>No Books</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% empty %}
+  <h2 class="mt-8">Not Found</h2>
+  {% endfor %}
+  {% endif %}
+
+  <!-- Book Results -->
+  {% if 'book' in request.get_full_path %}
+  <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mt-8">
+    {% for book in books_results %}
+    <li class="bg-white rounded-lg shadow-md p-4 text-center">
+      <h2 class="text-md font-bold">{{ book.name }}</h2>
+      <h4 class="text-sm">{{ book.author }}</h4>
+      <div class="flex justify-center mt-4">
+        <img
+          src="{{ book.image.url }}"
+          alt="{{ book.name }}"
+          class="w-24 h-24 rounded-full"
+        />
+      </div>
+      {% if not user.is_superuser and not user.is_anonymous %}
+      {% if book in issuedbooks %}
+      <p class="text-green-500 font-medium">Issued</p>
+      {% elif book in requestedbooks %}
+      <p class="text-pink-500 font-medium">Requested</p>
+      {% else %}
+      <a
+        href="/request-book-issue/{{ book.id }}/"
+        class="text-blue-500 underline"
+      >
+        Request Issue
+      </a>
+      {% endif %}
+      {% endif %}
+      {% if user.is_superuser %}
+      <a
+        href="/admin/library/book/{{ book.id }}/change/"
+        class="btn-blue mt-2"
+      >
+        Edit
+      </a>
+      {% endif %}
+    </li>
+    {% empty %}
+    <h2 class="mt-8">No Books Found</h2>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+{% endblock content %}

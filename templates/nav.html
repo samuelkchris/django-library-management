@@ -1,0 +1,51 @@
+<nav class="bg-pink-500 py-4 md:py-2">
+  <div class="container mx-auto flex items-center justify-between">
+    <a href="/" class="text-2xl md:text-3xl font-bold text-white">Library Management</a>
+
+    <!-- Mobile Menu Icon -->
+    <button id="ham" class="md:hidden text-white">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
+
+    <ul id="menu" class="md:flex space-x-4 hidden">
+      {% if user.is_anonymous %}
+        <li><a class="hover:underline text-white" href="/student/login">Login</a></li>
+        <li><a class="hover:underline text-white" href="/student/signup">Signup</a></li>
+        <li><a class="hover:underline text-white" href="/admin/">Admin Dashboard</a></li>
+      {% elif user.is_superuser %}
+        <!-- <li><a class="hover:underline text-white" href="/addbook/">Add Book</a></li> -->
+        <li><a class="hover:underline text-white" href="/all-issues/">Issue Requests</a></li>
+        <!-- <li><a class="hover:underline text-white" href="/all-fines/">All Fines</a></li> -->
+        <li><a class="hover:underline text-white" href="/admin/">Admin Dashboard</a></li>
+        <li><a class="hover:underline text-white" href="/student/logout">Logout</a></li>
+      {% else %}
+        <li><a class="hover:underline text-white" href="/my-issues/">My Issues</a></li>
+        <li><a class="hover:underline text-white" href="/my-fines/">My Fines</a></li>
+        <li><a class="hover:underline text-white" href="/student/logout">Logout</a></li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>
+
+<script>
+  const ham = document.querySelector("#ham");
+  const menu = document.querySelector("#menu");
+
+  ham.addEventListener("click", () => {
+    menu.classList.toggle("hidden");
+  });
+
+  // Handle menu visibility on page load and resize
+  function handleMenuVisibility() {
+    if (window.matchMedia("(min-width: 640px)").matches) {
+      menu.classList.remove("hidden");
+    } else {
+      menu.classList.add("hidden");
+    }
+  }
+
+  window.addEventListener("load", handleMenuVisibility);
+  window.addEventListener("resize", handleMenuVisibility);
+</script>
